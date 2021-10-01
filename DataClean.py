@@ -10,8 +10,12 @@ import sys
 # li is the current line of data that is being processed. #
 ###########################################################
 def process(li):
+    #split the data and store its peices into a data list
     dataList = li.split()
 
+    #string that will store a line of processed data 
+    #with all pieces of data separated with commas 
+    #(ex: 210422, 164445, 14.074, Rx, FT8, 5, 0.2, 1942, CQ, K8TE, DM65)
     processLine = ""
 
     for i in range(len(dataList)):
@@ -20,7 +24,7 @@ def process(li):
         if i != ( len(dataList) - 1 ):
 
             #if there is an underscore in the current data
-            #piece, the data needs to be separated
+            #piece, the data needs to be further separated
             if dataList[i].find("_"):
                 #split the data where the underscore is
                 separatedData = dataList[i].split("_")
@@ -37,13 +41,15 @@ def process(li):
         else:
             processLine += dataList[i]
 
+    #return the line after it is processed 
+    #with commas between each piece of data
     return processLine
 
 ###########################################################
 # main function that will be executed in runtime.         #
 ###########################################################
 def main():
-    # instantiate a new instance of the Path class and
+    #instantiate a new instance of the Path class and
     #initialize it with the file path that you want to check for existence
     path_to_file = 'ham_data.txt'
     path = Path(path_to_file)
@@ -78,4 +84,4 @@ def main():
 
     hamfile.close()
 if __name__=="__main__":
-    main()  
+    main()    
