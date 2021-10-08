@@ -140,6 +140,7 @@ def main():
                 print("1: time (x-axis), freq offset (y-axis)")
                 print("2: recieve strength (x-axis), freq offset (y-axis)")
                 print("3: time offset (x-axis), freq offset (y-axis)")
+                print("4: time (x-axis), recieve strength (y-axis)")
                 print("Enter which info you want to plot: ")
                 plotUserWantsToSee = input("\t>> ")
 
@@ -177,6 +178,17 @@ def main():
                         #obtain the time offset and freq offset points
                         x_axis.append(float(line[6]))
                         y_axis.append(int(line[7]))
+                #if the user wants to see the time offset and freq offset graph
+                elif plotUserWantsToSee == "4":
+                    for i in range(1000):
+                        #current line of data that will be used
+                        #to extract the time offset and freq offset
+                        line = processedLinesMatrix[i]
+                        
+                        #obtain the time offset and freq offset points
+                        x_axis.append(float(line[1]))
+                        y_axis.append(int(line[5]))
+
 
                 #plot with the corresponding points
                 plt.plot(x_axis, y_axis)
@@ -197,4 +209,4 @@ def main():
     hamfile.close()
 
 if __name__=="__main__":
-    main()   
+    main()  
