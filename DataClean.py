@@ -10,6 +10,27 @@ from pathlib import Path
 import os
 import sys
 
+# upload libraries for pandas
+import pandas as pd
+
+###########################################################
+# function that will create a panda from a csv file       #
+###########################################################
+def createPanda():
+
+    df = pd.read_csv("no_payload_ham_data.csv")
+    df.columns = [ "date",
+                    "timestamp",
+                    "freq",
+                    "recieve_strength",
+                    "time_offset",
+                    "freq_offset", ]
+                    #"payload" ]
+    print(df.to_string())
+
+    pd.pandas_data.info()
+    pd.pandas_data.describe()
+
 ###########################################################
 # function that will process a line by                    #
 # separating its components with commas                   #
@@ -42,11 +63,19 @@ def process(li):
         else:
             #if (dataPiece != "Rx") and (dataPiece != "Tx") and (dataPiece != "FT8") and (dataPiece != "FT4"):
             #add the data piece to the processed line list
-            processedLineList.append(dataPiece)
+                processedLineList.append(dataPiece)
 
     #return the line after it is processed 
     #with commas between each piece of data
     #return the processed line list after it is cleaned up
+    processedLineList.pop(3)
+    processedLineList.pop(3)
+
+    #use to omit the payload
+    #while(len(processedLineList) > 6):
+        #processedLineList.pop(6)
+    
+
     return processedLineList
 
 ###########################################################
@@ -60,7 +89,7 @@ def printToFile(listToPrint):
     print("\n... printing data to csv file ...\n")
 
     #open the csv file that will store the cleaned data
-    file = open("ham_data.csv", "w")
+    file = open("hamDataV2.csv", "w")
 
     #go through each line of data to separate
     #each data piece in each line with a comma
@@ -85,14 +114,16 @@ def printToFile(listToPrint):
 # main function that will be executed in runtime.         #
 ###########################################################
 def main():
+    #createPanda()
+    
     #instantiate a new instance of the Path class and
     #initialize it with the file path that you want to check for existence
-    path_to_file = 'ham_data.txt'
+    path_to_file = 'hamDataV2.TXT'
     path = Path(path_to_file)
 
     #try to open the data file
     print("\nwelcome to ham file")
-    hamfile = open("ham_data.txt", "r")
+    hamfile = open("hamDataV2.TXT", "r")
 
     #check if the file exists using the is_file() method
     if path.is_file():
@@ -148,39 +179,42 @@ def main():
                 x_axis = []
                 y_axis = []
 
+
+
                 #if the user wants to see the time and freq offset graph
                 if plotUserWantsToSee == "1":
-                    for i in range(1000):
+                    for i in range(20000):
+                    #for i in range(1000):
                         #current line of data that will be used
                         #to extract the time and freq offset
                         line = processedLinesMatrix[i]
                         
                         #obtain the time and freq offset points
                         x_axis.append(int(line[1]))
-                        y_axis.append(int(line[7]))
+                        y_axis.append(int(line[5]))
                 #if the user wants to see the recieve strength and freq offset graph
                 elif plotUserWantsToSee == "2":
-                    for i in range(1000):
+                    for i in range(40000):
                         #current line of data that will be used to
                         #extract the recieve strength and freq offset
                         line = processedLinesMatrix[i]
                         
                         #obtain the recieve strength and freq offset points
-                        x_axis.append(int(line[5]))
-                        y_axis.append(int(line[7]))
+                        x_axis.append(int(line[3]))
+                        y_axis.append(int(line[5]))
                 #if the user wants to see the time offset and freq offset graph
                 elif plotUserWantsToSee == "3":
-                    for i in range(1000):
+                    for i in range(40000):
                         #current line of data that will be used
                         #to extract the time offset and freq offset
                         line = processedLinesMatrix[i]
                         
                         #obtain the time offset and freq offset points
-                        x_axis.append(float(line[6]))
-                        y_axis.append(int(line[7]))
+                        x_axis.append(float(line[4]))
+                        y_axis.append(int(line[5]))
                 #if the user wants to see the time offset and freq offset graph
                 elif plotUserWantsToSee == "4":
-                    for i in range(1000):
+                    for i in range(40000):
                         #current line of data that will be used
                         #to extract the time offset and freq offset
                         line = processedLinesMatrix[i]
@@ -188,6 +222,14 @@ def main():
                         #obtain the time offset and freq offset points
                         x_axis.append(float(line[1]))
                         y_axis.append(int(line[5]))
+                elif plotUserWantsToSee == "5":
+                    for i in range(40000):
+
+                        line = processedLinesMatrix[i]
+
+                        #time and time offset
+                        x_axis.append(int(line[1]))
+                        y_axis.append(float(line[4]))
 
 
                 #plot with the corresponding points
@@ -207,6 +249,7 @@ def main():
         print(f'The file {path_to_file} does not exist')
 
     hamfile.close()
+
 
 if __name__=="__main__":
     main()  
