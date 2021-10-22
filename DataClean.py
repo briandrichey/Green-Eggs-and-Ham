@@ -114,7 +114,7 @@ def printToFile(listToPrint):
 ###########################################################
 def main():
     #createPanda()
-    
+    '''
     #instantiate a new instance of the Path class and
     #initialize it with the file path that you want to check for existence
     path_to_file = 'hamDataV2.TXT'
@@ -158,11 +158,11 @@ def main():
                 #after the data has been stored in a matrix, pass that
                 #matrix of processed values to be printed in a csv file
                 printToFile(processedLinesMatrix)
-
+            '''
             #ask the user if they want to see graphical representations of the data
             print("\nDo you want to see graphs of the data? (yes/no): ")
             ans = input("\t>> ")
-
+            
             #if the user wants to see graphical representations of the
             #data, ask them which data pieces they want to see in a graph
             while ans == "yes":
@@ -176,8 +176,8 @@ def main():
                 plotUserWantsToSee = input("\t>> ")
 
                 #declare the lists that will hold graph coordinates
-                x_axis = []
-                y_axis = []
+                #x_axis = []
+                #y_axis = []
 
                 #createPanda()
                 df = pd.read_csv("no_payload_ham_data.csv")
@@ -186,7 +186,7 @@ def main():
                     "freq",
                     "recieve_strength",
                     "time_offset",
-                    "freq_offset", ]
+                    "freq_offset" ]
 
                 #make a new empty graph
                 #plt.figure()
@@ -256,6 +256,8 @@ def main():
                         x_axis.append(int(line[1]))
                         y_axis.append(float(line[4]))
                     '''
+                elif plotUserWantsToSee == "6":
+                    df.plot(kind = "scatter", x = "recieve_strength", y = ["time_offset", ])
 
 
                 #plot with the corresponding points
@@ -267,6 +269,7 @@ def main():
                 print("\nDo you want to see more figures of the data? (yes/no): ")
                 ans = input("\t>> ")
 
+        '''
         #if say no then you are done then it will go to
         #the end where you close the hamfile.    
         else:
@@ -276,6 +279,7 @@ def main():
 
     hamfile.close()
 
+'''
 
 if __name__=="__main__":
     main()  
