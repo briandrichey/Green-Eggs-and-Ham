@@ -194,7 +194,7 @@ def main():
 
                 #if the user wants to see the time and freq offset graph
                 if plotUserWantsToSee == "1":
-                    df.plot(kind = "bar", x = "timestamp", y = "freq_offset")
+                    df.plot(kind = "scatter", x = "timestamp", y = "freq_offset")
                     '''
                     for i in range(70000):
                     #for i in range(1000):
@@ -208,7 +208,7 @@ def main():
                     '''
                 #if the user wants to see the recieve strength and freq offset graph
                 elif plotUserWantsToSee == "2":
-                    df.plot(kind = "bar", x = "recieve_strength", y = "freq_offset")
+                    df.plot(kind = "scatter", x = "recieve_strength", y = "freq_offset")
                     '''
                     for i in range(70000):
                         #current line of data that will be used to
@@ -221,7 +221,7 @@ def main():
                         '''
                 #if the user wants to see the time offset and freq offset graph
                 elif plotUserWantsToSee == "3":
-                    df.plot(kind = "bar", x = "recieve_strength", y = "freq_offset")
+                    df.plot(kind = "scatter", x = "recieve_strength", y = "freq_offset")
                     '''
                     for i in range(70000):
                         #current line of data that will be used
@@ -234,7 +234,7 @@ def main():
                     '''
                 #if the user wants to see the time offset and freq offset graph
                 elif plotUserWantsToSee == "4":
-                    df.plot(kind = "bar", x = "time_offset", y = "freq_offset")
+                    df.plot(kind = "scatter", x = "time_offset", y = "freq_offset")
                     '''
                     for i in range(70000):
                         #current line of data that will be used
@@ -246,7 +246,7 @@ def main():
                         y_axis.append(int(line[5]))
                     '''
                 elif plotUserWantsToSee == "5":
-                    df.plot(kind = "bar", x = "timestamp", y = "time_offset")
+                    df.plot(kind = "scatter", x = "timestamp", y = "time_offset")
                     '''
                     for i in range(70000):
 
