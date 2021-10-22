@@ -28,8 +28,8 @@ def createPanda():
                     #"payload" ]
     print(df.to_string())
 
-    pd.pandas_data.info()
-    pd.pandas_data.describe()
+    #pd.pandas_data.info()
+    #pd.pandas_data.describe()
 
 ###########################################################
 # function that will process a line by                    #
@@ -74,7 +74,6 @@ def process(li):
     #use to omit the payload
     #while(len(processedLineList) > 6):
         #processedLineList.pop(6)
-    
 
     return processedLineList
 
@@ -172,6 +171,7 @@ def main():
                 print("2: recieve strength (x-axis), freq offset (y-axis)")
                 print("3: time offset (x-axis), freq offset (y-axis)")
                 print("4: time (x-axis), recieve strength (y-axis)")
+                print("5: time (x-axis), time offset (y-axis)")
                 print("Enter which info you want to plot: ")
                 plotUserWantsToSee = input("\t>> ")
 
@@ -179,11 +179,24 @@ def main():
                 x_axis = []
                 y_axis = []
 
+                #createPanda()
+                df = pd.read_csv("no_payload_ham_data.csv")
+                df.columns = [ "date",
+                    "timestamp",
+                    "freq",
+                    "recieve_strength",
+                    "time_offset",
+                    "freq_offset", ]
 
+                #make a new empty graph
+                #plt.figure()
+                #df.figure()
 
                 #if the user wants to see the time and freq offset graph
                 if plotUserWantsToSee == "1":
-                    for i in range(20000):
+                    df.plot(kind = "bar", x = "timestamp", y = "freq_offset")
+                    '''
+                    for i in range(70000):
                     #for i in range(1000):
                         #current line of data that will be used
                         #to extract the time and freq offset
@@ -192,9 +205,12 @@ def main():
                         #obtain the time and freq offset points
                         x_axis.append(int(line[1]))
                         y_axis.append(int(line[5]))
+                    '''
                 #if the user wants to see the recieve strength and freq offset graph
                 elif plotUserWantsToSee == "2":
-                    for i in range(40000):
+                    df.plot(kind = "bar", x = "recieve_strength", y = "freq_offset")
+                    '''
+                    for i in range(70000):
                         #current line of data that will be used to
                         #extract the recieve strength and freq offset
                         line = processedLinesMatrix[i]
@@ -202,9 +218,12 @@ def main():
                         #obtain the recieve strength and freq offset points
                         x_axis.append(int(line[3]))
                         y_axis.append(int(line[5]))
+                        '''
                 #if the user wants to see the time offset and freq offset graph
                 elif plotUserWantsToSee == "3":
-                    for i in range(40000):
+                    df.plot(kind = "bar", x = "recieve_strength", y = "freq_offset")
+                    '''
+                    for i in range(70000):
                         #current line of data that will be used
                         #to extract the time offset and freq offset
                         line = processedLinesMatrix[i]
@@ -212,9 +231,12 @@ def main():
                         #obtain the time offset and freq offset points
                         x_axis.append(float(line[4]))
                         y_axis.append(int(line[5]))
+                    '''
                 #if the user wants to see the time offset and freq offset graph
                 elif plotUserWantsToSee == "4":
-                    for i in range(40000):
+                    df.plot(kind = "bar", x = "time_offset", y = "freq_offset")
+                    '''
+                    for i in range(70000):
                         #current line of data that will be used
                         #to extract the time offset and freq offset
                         line = processedLinesMatrix[i]
@@ -222,18 +244,22 @@ def main():
                         #obtain the time offset and freq offset points
                         x_axis.append(float(line[1]))
                         y_axis.append(int(line[5]))
+                    '''
                 elif plotUserWantsToSee == "5":
-                    for i in range(40000):
+                    df.plot(kind = "bar", x = "timestamp", y = "time_offset")
+                    '''
+                    for i in range(70000):
 
                         line = processedLinesMatrix[i]
 
                         #time and time offset
                         x_axis.append(int(line[1]))
                         y_axis.append(float(line[4]))
+                    '''
 
 
                 #plot with the corresponding points
-                plt.plot(x_axis, y_axis)
+                #plt.plot(x_axis, y_axis)
                 #show the graph with the plotted points
                 plt.show()
 
