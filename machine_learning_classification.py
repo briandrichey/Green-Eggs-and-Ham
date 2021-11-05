@@ -33,6 +33,23 @@ for i in range(np.array(dat).size):
     year[i] = int(str(dat[i])[0:2]) 
     month[i] = int(str(dat[i])[2:4])
     day[i] = int(str(dat[i])[4:6])
+    
+#parse time
+tim = pandas_data['time'] 
+hour = np.zeros(np.array(tim).size)
+min = np.zeros(np.array(tim).size)
+sec = np.zeros(np.array(tim).size)
+for i in range(np.array(tim).size):
+    hour[i] = int(str(tim[i])[0:2]) 
+    min[i] = int(str(tim[i])[2:4])
+    sec[i] = int(str(tim[i])[4:6])
+    
+#parse rec call sign 
+rloc = pandas_data['rec_call_sign'] 
+char2 = np.zeros(np.array(rloc).size)
+for i in range(np.array(rloc).size):
+    char2[i] = int(str(rloc[i])[0:2]) 
+    
 
 
 # x = pandas_data['time'][:]
@@ -47,9 +64,6 @@ for i in range(np.array(dat).size):
 # plt.show()
 
 x1 = pandas_data['date'][:]
-
-xz = pandas_data['day'][:]
-
 x2 = pandas_data['time'][:]
 y1 = pandas_data['freq'][:]
 x4 = pandas_data['rec_send'][:]
@@ -61,10 +75,10 @@ x9 = pandas_data['send_call_sign'][:]
 x10 = pandas_data['grid_loc'][:]
 x11 = pandas_data['translator'][:]
 
-
+#https://scikit-learn.org/stable/modules/tree.html#classification ******
  from sklearn import tree
  X = [
-      [0, 0],
+      [0, 0], #[dat,tim,.........]
       [1, 1]
      #..... #features = all other variables 0 = (number of samples , number of features ) * every row is sample* 
      
