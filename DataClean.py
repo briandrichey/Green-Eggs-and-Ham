@@ -23,10 +23,8 @@ import pandas as pd
 # li is the current line of data that is being processed. #
 ###########################################################
 def process(li):
-    import pandas as locData
-
     #get the location prefix codes from the excel file
-    locDf = locData.read_excel("CallSignSeriesRanges.xlsx")
+    locDf = pd.read_excel("CallSignSeriesRanges.xlsx")
     locDf.columns = [ "series", "series_prefix", "location" ]
     #print(locDf)
 
@@ -42,7 +40,7 @@ def process(li):
         dataPiece = dataList[i]
 
         #if the data piece is not apart of the payload
-        if i != 7:
+        if i < 7:
             #if there is an underscore in the current data
             #piece, the data needs to be further separated
             if dataPiece.find("_"):
@@ -107,7 +105,7 @@ def printToFile(listToPrint):
     print("\n... printing data to csv file ...\n")
 
     #open the csv file that will store the cleaned data
-    file = open("hamDataV2.csv", "w")
+    file = open("ham_data.csv", "w")
 
     #go through each line of data to separate
     #each data piece in each line with a comma
@@ -136,12 +134,12 @@ def main():
     
     #instantiate a new instance of the Path class and
     #initialize it with the file path that you want to check for existence
-    path_to_file = 'ham_data.txt'
+    path_to_file = 'ham_data_reduced.txt'
     path = Path(path_to_file)
 
     #try to open the data file
     print("\nwelcome to ham file")
-    hamfile = open("ham_data.txt", "r")
+    hamfile = open("ham_data_reduced.txt", "r")
 
     #check if the file exists using the is_file() method
     if path.is_file():
@@ -243,4 +241,4 @@ def main():
     hamfile.close()
     
 if __name__=="__main__":
-    main()   
+    main()  
