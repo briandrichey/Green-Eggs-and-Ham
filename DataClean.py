@@ -27,7 +27,8 @@ def process(li):
 
     #get the location prefix codes from the excel file
     locDf = locData.read_excel("CallSignSeriesRanges.xlsx")
-    locDf.columns = [ "series", "location" ]
+    locDf.columns = [ "series", "series_prefix", "location" ]
+    #print(locDf)
 
     #split the data and store its peices into a data list
     dataList = li.split()
@@ -63,11 +64,24 @@ def process(li):
                 #store the first two characters of the location prefix
                 locationPrefix = dataPiece[0] + dataPiece[1]
                 #find the index of the location in the dataframe
-                locationIndex = locDf["series"].str.find(locationPrefix)
-                #get the actual location from the index where it was found
-                location = locDf.iloc[locationIndex, 1]
-                #add the location to the data
-                processedLineList.append(location)
+                #locationIndex = locDf.columns.get_loc()
+                locationIndex = -1
+                #check through the location dataframe to see if the location prefix exists
+                for i in range(len(locDf)):
+                    #if the location prefix was found in the panda, 
+                    # get the index of the row it was found on
+                    if locDf.iloc[i]["series_prefix"] == locationPrefix:
+                        locationIndex = i
+
+                #if the location was found in the panda
+                if locationIndex != -1:
+                    #get the actual location from the index of the row where it was found
+                    location = locDf.iloc[locationIndex, 2]
+                    #add the location next to it's corresponding code
+                    processedLineList.append(location) 
+                #otherwise, no location was found in the panda
+                else:
+                    processedLineList.append("NO LOCATION FOUND")
             #if the current payload data piece is the grid location
             else:
                 gridLocation = dataPiece
@@ -122,12 +136,12 @@ def main():
     
     #instantiate a new instance of the Path class and
     #initialize it with the file path that you want to check for existence
-    path_to_file = 'hamDataV2.TXT'
+    path_to_file = 'ham_data.txt'
     path = Path(path_to_file)
 
     #try to open the data file
     print("\nwelcome to ham file")
-    hamfile = open("hamDataV2.TXT", "r")
+    hamfile = open("ham_data.txt", "r")
 
     #check if the file exists using the is_file() method
     if path.is_file():
@@ -221,13 +235,12 @@ def main():
         
         #if say no then you are done then it will go to
         #the end where you close the hamfile.    
-        else:
-              print("you are done bye")
+        #else:
+        print("you are done bye")
     else:
         print(f'The file {path_to_file} does not exist')
 
     hamfile.close()
     
-
 if __name__=="__main__":
-    main()    
+    main()   
