@@ -58,60 +58,75 @@ def process(li):
         #if the data piece is apart of the payload
         else:
             #if the current payload data piece is not the last piece of data (grid location)
-            if i != (len(dataList) - 1):
-                if len(dataPiece) >= 2:
-                    #store the first two characters of the location prefix
-                    locationPrefix = dataPiece[0] + dataPiece[1]
-                else:
-                    locationPrefix = dataPiece[0]
+            #if i != (len(dataList) - 1):
+            if len(dataPiece) >= 2:
+                #store the first two characters of the location prefix
+                locationPrefix = dataPiece[0] + dataPiece[1]
+            else:
+                locationPrefix = dataPiece[0]
 
-                if locationPrefix[0] == '<' and len(locationPrefix) >= 3:
-                    locationPrefex = dataPiece[1] + dataPiece[2]
-                #find the index of the location in the dataframe
-                #locationIndex = locDf.columns.get_loc()
-                locationIndex = -1
+            if len(locationPrefix) >= 3 and locationPrefix[0] == '<':
+                locationPrefex = dataPiece[1] + dataPiece[2]
+            #find the index of the location in the dataframe
+            #locationIndex = locDf.columns.get_loc()
+            locationIndex = -1
 
-                #if the first character 
-                if locationPrefix[0] == 'N' or locationPrefix[0] == 'W' or locationPrefix[0] == 'K':
-                    location = "United States of America"
-                    locationIndex = 0
-                elif locationPrefix[0] == 'B':
-                    location = "China (People's Republic of)"
-                    locationIndex = 0
-                elif locationPrefix[0] == 'R':
-                    location = "Russian Federation"
-                    locationIndex = 0
-                elif locationPrefix[0] == 'M' or locationPrefix[0] == 'G' or locationPrefix[0] == '2':
-                    location = "United Kingdom of Great Britain and Northern Ireland"
-                    locationIndex = 0
-                elif locationPrefix[0] == 'I':
-                    location = "Italy"
-                    locationIndex = 0
-                elif locationPrefix[0] == 'F':
-                    location = "France"
-                    locationIndex = 0
-                elif locationPrefix[0] == ".":
-                    pass
-                elif len(locationPrefix) >= 2 and locationPrefix == "CQ":
-                    location = "All Stations"
-                    locationIndex = 0
-                else:
-                    #check through the location dataframe to see if the location prefix exists
-                    for i in range(len(locDf)):
-                        #if the location prefix was found in the panda, 
-                        # get the index of the row it was found on
-                        if locDf.iloc[i]["series_prefix"] == locationPrefix:
-                            locationIndex = i
+            #if the first character 
+            if locationPrefix[0] == 'N' or locationPrefix[0] == 'W' or locationPrefix[0] == 'K':
+                location = "United States of America"
+                locationIndex = 0
+            elif locationPrefix[0] == 'B':
+                location = "China (People's Republic of)"
+                locationIndex = 0
+            elif locationPrefix[0] == 'R':
+                location = "Russian Federation"
+                locationIndex = 0
+            elif locationPrefix[0] == 'M' or locationPrefix[0] == 'G' or locationPrefix[0] == '2':
+                location = "United Kingdom of Great Britain and Northern Ireland"
+                locationIndex = 0
+            elif locationPrefix[0] == 'I':
+                location = "Italy"
+                locationIndex = 0
+            elif locationPrefix[0] == 'F':
+                location = "France"
+                locationIndex = 0
+            elif locationPrefix[0] == ".":
+                pass
+            elif len(locationPrefix) >= 2 and locationPrefix == "CQ":
+                location = "All Stations"
+                locationIndex = 0
+            elif (i == len(dataList) - 1) and len(dataPiece) == 4 and dataPiece[0].isalpha() and dataPiece[1].isalpha() and dataPiece[2].isdigit() and dataPiece[3].isdigit():
+                 #solving for latitude-----------------------------------------------
+                step1Result = (ord(dataPiece[1]) - 65) * 10
+                step2Result = ord(dataPiece[3]) - 48
+                latitude = step1Result + step2Result - 90
 
-                #if the location was found in the panda
-                if locationIndex != -1:
-                    #get the actual location from the index of the row where it was found
-                    location = locDf.iloc[locationIndex, 2]
-                    #add the location next to it's corresponding code
-                    processedLineList.append(location) 
-                #otherwise, no location was found in the panda
-                else:
-                    processedLineList.append("NO LOCATION FOUND")
+                #solving for longitude----------------------------------------------
+                step1Result = (ord(dataPiece[0]) - 65) * 20
+                step2Result = (ord(dataPiece[2]) - 48) * 2
+                longitude = (step1Result + step2Result) - 180
+
+                processedLineList.append("(" + str(latitude) + ", " + str(longitude) + ")")
+                #gridLocation = dataPiece
+                #processedLineList.append(dataPiece)
+            else:
+                #check through the location dataframe to see if the location prefix exists
+                for i in range(len(locDf)):
+                    #if the location prefix was found in the panda, 
+                    # get the index of the row it was found on
+                    if locDf.iloc[i]["series_prefix"] == locationPrefix:
+                        locationIndex = i
+
+            #if the location was found in the panda
+            if locationIndex != -1:
+                #get the actual location from the index of the row where it was found
+                location = locDf.iloc[locationIndex, 2]
+                #add the location next to it's corresponding code
+                processedLineList.append(location) 
+            #otherwise, no location was found in the panda
+            else:
+                processedLineList.append("NO LOCATION FOUND")
+            '''
             #if the current payload data piece is the grid location
             else:
                 if len(dataPiece) == 4:
@@ -130,6 +145,7 @@ def process(li):
                 #processedLineList.append(dataPiece)
                 else:
                     processedLineList.append(dataPiece)
+            '''
 
     processedLineList.pop(3) #getting rid of Rx/Tx
     processedLineList.pop(3) #getting rid of FT4/FT8
@@ -289,4 +305,4 @@ def main():
     hamfile.close()
     
 if __name__=="__main__":
-    main()
+    main()  
