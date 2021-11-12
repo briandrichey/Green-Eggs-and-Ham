@@ -59,17 +59,49 @@ def process(li):
         else:
             #if the current payload data piece is not the last piece of data (grid location)
             if i != (len(dataList) - 1):
-                #store the first two characters of the location prefix
-                locationPrefix = dataPiece[0] + dataPiece[1]
+                if len(dataPiece) >= 2:
+                    #store the first two characters of the location prefix
+                    locationPrefix = dataPiece[0] + dataPiece[1]
+                else:
+                    locationPrefix = dataPiece[0]
+
+                if locationPrefix[0] == '<' and len(locationPrefix) >= 3:
+                    locationPrefex = dataPiece[1] + dataPiece[2]
                 #find the index of the location in the dataframe
                 #locationIndex = locDf.columns.get_loc()
                 locationIndex = -1
-                #check through the location dataframe to see if the location prefix exists
-                for i in range(len(locDf)):
-                    #if the location prefix was found in the panda, 
-                    # get the index of the row it was found on
-                    if locDf.iloc[i]["series_prefix"] == locationPrefix:
-                        locationIndex = i
+
+                #if the first character 
+                if locationPrefix[0] == 'N' or locationPrefix[0] == 'W' or locationPrefix[0] == 'K':
+                    location = "United States of America"
+                    locationIndex = 0
+                elif locationPrefix[0] == 'B':
+                    location = "China (People's Republic of)"
+                    locationIndex = 0
+                elif locationPrefix[0] == 'R':
+                    location = "Russian Federation"
+                    locationIndex = 0
+                elif locationPrefix[0] == 'M' or locationPrefix[0] == 'G' or locationPrefix[0] == '2':
+                    location = "United Kingdom of Great Britain and Northern Ireland"
+                    locationIndex = 0
+                elif locationPrefix[0] == 'I':
+                    location = "Italy"
+                    locationIndex = 0
+                elif locationPrefix[0] == 'F':
+                    location = "France"
+                    locationIndex = 0
+                elif locationPrefix[0] == ".":
+                    pass
+                elif len(locationPrefix) >= 2 and locationPrefix == "CQ":
+                    location = "All Stations"
+                    locationIndex = 0
+                else:
+                    #check through the location dataframe to see if the location prefix exists
+                    for i in range(len(locDf)):
+                        #if the location prefix was found in the panda, 
+                        # get the index of the row it was found on
+                        if locDf.iloc[i]["series_prefix"] == locationPrefix:
+                            locationIndex = i
 
                 #if the location was found in the panda
                 if locationIndex != -1:
@@ -82,10 +114,26 @@ def process(li):
                     processedLineList.append("NO LOCATION FOUND")
             #if the current payload data piece is the grid location
             else:
-                gridLocation = dataPiece
+                if len(dataPiece) == 4:
+                    #solving for latitude-----------------------------------------------
+                    step1Result = (ord(dataPiece[1]) - 65) * 10
+                    step2Result = ord(dataPiece[3]) - 48
+                    latitude = step1Result + step2Result - 90
+
+                    #solving for longitude----------------------------------------------
+                    step1Result = (ord(dataPiece[0]) - 65) * 20
+                    step2Result = (ord(dataPiece[2]) - 48) * 2
+                    longitude = (step1Result + step2Result) - 180
+
+                    processedLineList.append("(" + str(latitude) + ", " + str(longitude) + ")")
+                #gridLocation = dataPiece
+                #processedLineList.append(dataPiece)
+                else:
+                    processedLineList.append(dataPiece)
 
     processedLineList.pop(3) #getting rid of Rx/Tx
     processedLineList.pop(3) #getting rid of FT4/FT8
+    processedLineList.pop(4) #getting rid of freq offset
 
     #use to omit the payload
     #while(len(processedLineList) > 6):
@@ -241,4 +289,4 @@ def main():
     hamfile.close()
     
 if __name__=="__main__":
-    main()  
+    main()
