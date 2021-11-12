@@ -66,49 +66,69 @@ def process(li):
                 locationPrefix = dataPiece[0]
 
             if len(locationPrefix) >= 3 and locationPrefix[0] == '<':
-                locationPrefex = dataPiece[1] + dataPiece[2]
+                locationPrefix = dataPiece[1] + dataPiece[2]
             #find the index of the location in the dataframe
             #locationIndex = locDf.columns.get_loc()
             locationIndex = -1
+            message = False
 
-            #if the first character 
-            if locationPrefix[0] == 'N' or locationPrefix[0] == 'W' or locationPrefix[0] == 'K':
-                location = "United States of America"
-                locationIndex = 0
-            elif locationPrefix[0] == 'B':
-                location = "China (People's Republic of)"
-                locationIndex = 0
-            elif locationPrefix[0] == 'R':
-                location = "Russian Federation"
-                locationIndex = 0
-            elif locationPrefix[0] == 'M' or locationPrefix[0] == 'G' or locationPrefix[0] == '2':
-                location = "United Kingdom of Great Britain and Northern Ireland"
-                locationIndex = 0
-            elif locationPrefix[0] == 'I':
-                location = "Italy"
-                locationIndex = 0
-            elif locationPrefix[0] == 'F':
-                location = "France"
-                locationIndex = 0
-            elif locationPrefix[0] == ".":
-                pass
-            elif len(locationPrefix) >= 2 and locationPrefix == "CQ":
-                location = "All Stations"
-                locationIndex = 0
+            #if the message piece is a special message
+            if (i == len(dataList) - 1) and len(dataPiece) == 3 and dataPiece == "RRR":
+                processedLineList.append("All recieved")
+                message = True
+            elif (i == len(dataList) - 1) and len(dataPiece) == 2 and dataPiece == "73":
+                processedLineList.append("Goodbye")
+                message = True
+            elif (i == len(dataList) - 1) and len(dataPiece) == 4 and dataPiece == "RR73":
+                processedLineList.append("All recieved best wishes and thanks for the QSO")
+                message = True
+            #if the message piece is a recieved strength
+            elif (i == len(dataList) - 1) and len(dataPiece) == 3 and (dataPiece[0] == '-' or dataPiece[0] == '+') and dataPiece[1].isdigit and dataPiece[2].isdigit:
+                processedLineList.append(dataPiece)
+                message = True
+            #if the message piece looks like (ex: R-34)
+            elif (i == len(dataList) - 1) and len(dataPiece) == 4 and dataPiece[0] == 'R' and (dataPiece[1] == '-' or dataPiece[1] == '+') and dataPiece[2].isdigit() and dataPiece[3].isdigit():
+                processedLineList.append(dataPiece)
+                message = True
+            #if the message piece is the grid location
             elif (i == len(dataList) - 1) and len(dataPiece) == 4 and dataPiece[0].isalpha() and dataPiece[1].isalpha() and dataPiece[2].isdigit() and dataPiece[3].isdigit():
-                 #solving for latitude-----------------------------------------------
+                #solving for latitude-----------------------------------------------
                 step1Result = (ord(dataPiece[1]) - 65) * 10
                 step2Result = ord(dataPiece[3]) - 48
                 latitude = step1Result + step2Result - 90
-
                 #solving for longitude----------------------------------------------
                 step1Result = (ord(dataPiece[0]) - 65) * 20
                 step2Result = (ord(dataPiece[2]) - 48) * 2
                 longitude = (step1Result + step2Result) - 180
-
+                #output add the grid coordinates into the processed data
                 processedLineList.append("(" + str(latitude) + ", " + str(longitude) + ")")
-                #gridLocation = dataPiece
-                #processedLineList.append(dataPiece)
+                message = True
+            #check if the first character could be dedicated for a single country
+            elif locationPrefix[0] == 'N' or locationPrefix[0] == 'W' or locationPrefix[0] == 'K':
+                location = "United States of America"
+                locationIndex = "Found"
+            elif locationPrefix[0] == 'B':
+                location = "China (People's Republic of)"
+                locationIndex = "Found"
+            elif locationPrefix[0] == 'R':
+                location = "Russian Federation"
+                locationIndex = "Found"
+            elif locationPrefix[0] == 'M' or locationPrefix[0] == 'G' or locationPrefix[0] == '2':
+                location = "United Kingdom of Great Britain and Northern Ireland"
+                locationIndex = "Found"
+            elif locationPrefix[0] == 'I':
+                location = "Italy"
+                locationIndex = "Found"
+            elif locationPrefix[0] == 'F':
+                location = "France"
+                locationIndex = "Found"
+            #if the callsign looks like <...>, then no location was found
+            elif locationPrefix[0] == ".":
+                pass
+            #if the callsign is CQ, then it represents all stations
+            elif len(dataPiece) == 2 and locationPrefix == "CQ":
+                location = "All Stations"
+                locationIndex = 0
             else:
                 #check through the location dataframe to see if the location prefix exists
                 for i in range(len(locDf)):
@@ -117,19 +137,22 @@ def process(li):
                     if locDf.iloc[i]["series_prefix"] == locationPrefix:
                         locationIndex = i
 
-            #if the location was found in the panda
-            if locationIndex != -1:
-                #get the actual location from the index of the row where it was found
-                location = locDf.iloc[locationIndex, 2]
-                #add the location next to it's corresponding code
-                processedLineList.append(location) 
-            #otherwise, no location was found in the panda
-            else:
-                processedLineList.append("NO LOCATION FOUND")
+            #if we are not yet using the message piece of the data, it has to be a callsign
+            if message == False:
+                #if the location was found in the panda
+                if locationIndex != -1:
+                    if locationIndex != "Found":
+                        #get the actual location from the index of the row where it was found
+                        location = locDf.iloc[locationIndex, 2]
+                    #add the location next to it's corresponding code
+                    processedLineList.append(location) 
+                #otherwise, no location was found in the panda
+                else:
+                    processedLineList.append("NO LOCATION FOUND")
             '''
-            #if the current payload data piece is the grid location
+            if the current payload data piece is a message
             else:
-                if len(dataPiece) == 4:
+                if len(dataPiece) == 4 and dataPiece[0].isalpha() and dataPiece[1].isalpha() and dataPiece[2].isdigit() and dataPiece[3].isdigit():
                     #solving for latitude-----------------------------------------------
                     step1Result = (ord(dataPiece[1]) - 65) * 10
                     step2Result = ord(dataPiece[3]) - 48
@@ -149,7 +172,7 @@ def process(li):
 
     processedLineList.pop(3) #getting rid of Rx/Tx
     processedLineList.pop(3) #getting rid of FT4/FT8
-    processedLineList.pop(4) #getting rid of freq offset
+    processedLineList.pop(5) #getting rid of freq offset
 
     #use to omit the payload
     #while(len(processedLineList) > 6):
