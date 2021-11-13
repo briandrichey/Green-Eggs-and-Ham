@@ -37,25 +37,25 @@ pandas_data = pd.read_csv("no_payload_ham_data.csv", sep = ",", names=['date', '
 #    day[i] = int(str(dat[i])[4:6])
 #'''
 
+'''
 #parse time
 tim = pandas_data['time'] 
 hour = np.zeros(np.array(tim).size)
 min = np.zeros(np.array(tim).size)
 sec = np.zeros(np.array(tim).size)
 
-print(hour)
-print(min)
-print(sec)
-
 print(np.array(tim))
 
+print(tim)
 
-for i in range(np.array(tim).size):  
-    print(i)
-    hour[i] = int((tim[i])[0:2]) 
-    min[i] = int((tim[i])[2:4])
-    sec[i] = int((tim[i])[4:6])
+for i in range(np.array(tim).size): #how to specify
+    cur_time = str(np.array(tim[i]))
+
+    hour[i] = int(cur_time[0] + cur_time[1]) 
+    min[i] = int(cur_time[2] + cur_time[3])#[2:4])
+    sec[i] = int(cur_time[4] + cur_time[5])#[4:6])
     
+'''
 #'''
 ##parse rec call sign 
 #rloc = pandas_data['rec_call_sign'] 
@@ -77,11 +77,12 @@ for i in range(np.array(tim).size):
 # plt.show()
 
 #x1 = pandas_data['date'][:]
-x_time = pandas_data[hour, min, sec][:]
+#x_time = pandas_data[hour, min, sec][:]
 #y1 = pandas_data['freq'][:]
 #x4 = pandas_data['rec_send'][:]
-x_signal_strength = pandas_data['signal_strgth'][:]
-x_device_offset = pandas_data['device_offset_delta_time'][:]
+x_signal_strength = pandas_data['signal_strgth'].astype(int).to_numpy()
+x_device_offset = pandas_data['device_offset_delta_time'].astype(int).to_numpy()
+y_base_freq = pandas_data['freq'].astype(str).to_numpy()
 #x7 = pandas_data['freq_offset'][:]# n/a
 #x_rec_callsign = pandas_data['rec_call_sign'][:]
 #x_send_callsign = pandas_data['send_call_sign'][:]
@@ -90,8 +91,12 @@ x_device_offset = pandas_data['device_offset_delta_time'][:]
 
 #https://scikit-learn.org/stable/modules/tree.html#classification ******
 from sklearn import tree
+
+print(x_signal_strength.shape)
+print(type(x_signal_strength))
+
 X = [
-        x_time, x_signal_strength, x_device_offset #, x_rec_callsign, x_send_callsign, x_grid_loc
+        np.concatenate((x_signal_strength, x_device_offset), axis = 1) #, x_rec_callsign, x_send_callsign, x_grid_loc
     #'''
     #[0, 0], #[dat,tim,.........]
     #[1, 1]
@@ -99,11 +104,25 @@ X = [
     #..... #features = all other variables 0 = (number of samples , number of features ) * every row is sample* 
     ]
 
+#print(X)
+#print(type(X))
+
 from sklearn.preprocessing import LabelBinarizer
-Y = [7.074, 10.136, 14.074, 18.100, 21.074, 28.074] #target = freq
-Y = LabelBinarizer().fit_transorm(Y)
+#y = np.array(["7.074", "10.136", "14.074", "18.100", "21.074", "28.074"]) #target = freq
+#print(y)
+y_dense = LabelBinarizer().fit_transform(y_base_freq)
+print(y_dense)
+
+print("worked")
+
+'''
+from scipy import sparse
+y_sparse = sparse.csr_matrix(y_dense)
+print(y_sparse)
+'''
+
 clf = tree.DecisionTreeClassifier()
-clf = clf.fit(X, Y)
+clf = clf.fit(X, y_dense)
 
 clf.predict([[2., 2.]])
 #array([1])
@@ -113,4 +132,4 @@ from sklearn import tree
 iris = load_iris()
 X, y = iris.data, iris.target
 clf = tree.DecisionTreeClassifier()
-clf = clf.fit(X, y)
+clf = clf.fit(X, y_dense)
