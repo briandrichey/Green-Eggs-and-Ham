@@ -100,11 +100,6 @@ def sunpos(when, location):
 # li is the current line of data that is being processed. #
 ###########################################################
 def process(li):
-    #get the location prefix codes from the excel file
-    locDf = pd.read_excel("CallSignSeriesRanges.xlsx")
-    locDf.columns = [ "series", "series_prefix", "location" ]
-    #print(locDf)
-
     #split the data and store its peices into a data list
     dataList = li.split()
 
@@ -131,7 +126,7 @@ def process(li):
     elif (len(lastDataPiece) == 2 and lastDataPiece == "73"):
         messageExists = True
         messageType = "special"
-    elif (len(lastDataPiece) == 4 and lastDataPiece == "RR73"):
+    elif (len(lastDataPiece) == 4 and lastDataPiece[0].isalpha and lastDataPiece[1].isalpha and lastDataPiece[2] == '7' and lastDataPiece[3] == '3'):
         messageExists = True
         messageType = "special"
     #if the message piece is a recieved strength
@@ -174,22 +169,6 @@ def process(li):
 
         #if the data piece is apart of the payload
         else:
-            '''
-            #if the current payload data piece is not the last piece of data (grid location)
-            #if i != (len(dataList) - 1):
-            if len(dataPiece) >= 2:
-                #store the first two characters of the location prefix
-                locationPrefix = dataPiece[0] + dataPiece[1]
-            else:
-                locationPrefix = dataPiece[0]
-
-            if len(locationPrefix) >= 3 and locationPrefix[0] == '<':
-                locationPrefix = dataPiece[1] + dataPiece[2]
-            #find the index of the location in the dataframe
-            #locationIndex = locDf.columns.get_loc()
-            locationIndex = -1
-            '''
-
             #if the message piece is a special message
             if (i == len(dataList) - 1) and messageType == "special": #len(dataPiece) == 3 and dataPiece == "RRR":
                 processedLineList.append(dataPiece)
@@ -230,49 +209,6 @@ def process(li):
                 processedLineList.append(str(sun_azimuth))
                 processedLineList.append(str(sun_elevation))
 
-                '''
-                date = processedLineList[0]
-                time = processedLineList[1]
-
-                #if there is a 0 in front of the month, get rid of it for the UTC time
-                if date[8] == '0':
-                    date.replace('0', '')
-
-                #get the UTC time for getting the location of the sun
-                datetime = date + " " + time[0:5]
-
-                sunPos = astral.sun(date, latitude, longitude)
-                print(sunPos)
-
-                
-                loc = EarthLocation(latitude, longitude)
-                altazframe = AltAz(obstime = datetime, location = loc)
-                sunaltaz = get_sun(datetime).transform_to(altazframe)
-
-                print(sunaltaz)
-
-                
-                #get the az (direction of sun), alt (altitude of sun)
-                az, alt = ast.sun_az_alt(datetime, longitude, latitude)
-                #get the sun time (if the sun is up in the area and time or not, etc)
-                sunTime = ast.sun_time(datetime, longitude, latitude, alt, az)
-
-                processedLineList.append(az)
-                processedLineList.append(alt)
-                processedLineList.append(sunTime)
-
-                
-                #get the sun time by using the UTC time
-                sun_time = Time(UTC_time)
-                #get the Earth location from the coordinates
-                loc = EarthLocation.of_address(latitude, longitude)
-                altaz = AltAz(obstime = sun_time, location = loc)
-                zen_ang = get_sun(sun_time).transform_to(altaz).zen
-
-                processedLineList.append(sun_time)
-                processedLineList.append(zen_ang)
-                '''
-
             #if the message piece is a callsign
             else:
                 
@@ -285,94 +221,17 @@ def process(li):
 
                     #if the message does not exist, include nan
                     if messageExists == False:
-                        processedLineList.append("nan")
+                        processedLineList.append("None")
 
                 #if the current callsign is not the last callsign, store it into the callsign list
                 else:
                     callsignCounter = callsignCounter + 1
                     callsigns = callsigns + dataPiece + " "
 
-                '''
-                #check through the location dataframe to see if the location prefix exists
-                for i in range(len(locDf)):
-                    #if the location prefix was found in the panda, 
-                    # get the index of the row it was found on
-                    if locDf.iloc[i]["series_prefix"] == locationPrefix:
-                        locationIndex = i
-                '''
-            '''
-            #check if the first character could be dedicated for a single country
-            elif locationPrefix[0] == 'N' or locationPrefix[0] == 'W' or locationPrefix[0] == 'K':
-                location = "United States of America"
-                locationIndex = "Found"
-            elif locationPrefix[0] == 'B':
-                location = "China (People's Republic of)"
-                locationIndex = "Found"
-            elif locationPrefix[0] == 'R':
-                location = "Russian Federation"
-                locationIndex = "Found"
-            elif locationPrefix[0] == 'M' or locationPrefix[0] == 'G' or locationPrefix[0] == '2':
-                location = "United Kingdom of Great Britain and Northern Ireland"
-                locationIndex = "Found"
-            elif locationPrefix[0] == 'I':
-                location = "Italy"
-                locationIndex = "Found"
-            elif locationPrefix[0] == 'F':
-                location = "France"
-                locationIndex = "Found"
-            #if the callsign looks like <...>, then no location was found
-            elif locationPrefix[0] == ".":
-                pass
-            
-            #if the callsign is CQ, then it represents calling all stations
-            elif len(dataPiece) == 2 and locationPrefix == "CQ":
-                location = "Calling all Stations"
-                locationIndex = 0
-            else:
-                #check through the location dataframe to see if the location prefix exists
-                for i in range(len(locDf)):
-                    #if the location prefix was found in the panda, 
-                    # get the index of the row it was found on
-                    if locDf.iloc[i]["series_prefix"] == locationPrefix:
-                        locationIndex = i
-            
-
-            #if we are not yet using the message piece of the data, it has to be a callsign
-            if message == False:
-                #if the location was found in the panda
-                if locationIndex != -1:
-                    if locationIndex != "Found":
-                        #get the actual location from the index of the row where it was found
-                        location = locDf.iloc[locationIndex, 2]
-                    #add the location next to it's corresponding code
-                    processedLineList.append(location) 
-                #otherwise, no location was found in the panda
-                else:
-                    processedLineList.append("NO LOCATION FOUND")
-            
-            if the current payload data piece is a message
-            else:
-                if len(dataPiece) == 4 and dataPiece[0].isalpha() and dataPiece[1].isalpha() and dataPiece[2].isdigit() and dataPiece[3].isdigit():
-                    #solving for latitude-----------------------------------------------
-                    step1Result = (ord(dataPiece[1]) - 65) * 10
-                    step2Result = ord(dataPiece[3]) - 48
-                    latitude = step1Result + step2Result - 90
-
-                    #solving for longitude----------------------------------------------
-                    step1Result = (ord(dataPiece[0]) - 65) * 20
-                    step2Result = (ord(dataPiece[2]) - 48) * 2
-                    longitude = (step1Result + step2Result) - 180
-
-                    processedLineList.append("(" + str(latitude) + ", " + str(longitude) + ")")
-                #gridLocation = dataPiece
-                #processedLineList.append(dataPiece)
-                else:
-                    processedLineList.append(dataPiece)
-            '''
     #if the grid location was not included in this line of data, there was no sun data
     if gridLocExists == False:
-        processedLineList.append("nan")
-        processedLineList.append("nan")
+        processedLineList.append("None")
+        processedLineList.append("None")
 
     processedLineList.pop(3) #getting rid of Rx/Tx
     processedLineList.pop(3) #getting rid of FT4/FT8
@@ -398,7 +257,7 @@ def printToFile(listToPrint):
     print("\n... printing data to csv file ...\n")
 
     #open the csv file that will store the cleaned data
-    file = open("ham_data_reduced.csv", "w")
+    file = open("hamDataV2.csv", "w")
 
     #go through each line of data to separate
     #each data piece in each line with a comma
@@ -408,27 +267,8 @@ def printToFile(listToPrint):
             #only separate data peices with a comma 
             #if the current data peice is not the last one
             if i != ( len(line) - 1 ):
-                '''
-                #if the current piece of data is not a list, output it normally
-                if(type(line[i]) != list):
-                '''
                 print(line[i] + ",", end = " ")
                 file.write(line[i] + ", ") 
-                '''
-                #otherwise, the current piece of data is a list, so print the contents in list format
-                else:
-                    listOfData = line[i]
-
-                    #print("[", end = "")
-                    #file.write("[")
-
-                    for j in range(len(listOfData) - 1):
-                        print(listOfData[j], end = " ")
-                        file.write(listOfData[j] + " ") 
-
-                    print(listOfData[len(listOfData) - 1] + ",", end = " ")
-                    file.write(listOfData[len(listOfData) - 1] + ", ") 
-                '''
 
             #otherwise, the last data peice will
             #be processed with no comma after
@@ -448,12 +288,12 @@ def main():
     
     #instantiate a new instance of the Path class and
     #initialize it with the file path that you want to check for existence
-    path_to_file = 'ham_data_reduced.txt'
+    path_to_file = 'hamDataV2.TXT'
     path = Path(path_to_file)
 
     #try to open the data file
     print("\nwelcome to ham file")
-    hamfile = open("ham_data_reduced.txt", "r")
+    hamfile = open("hamDataV2.TXT", "r")
 
     #check if the file exists using the is_file() method
     if path.is_file():
